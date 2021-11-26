@@ -19,6 +19,12 @@ def pass_1(lines):
             continue
         if "END" in words:
             break
+        if not words:  # FOR EMPTY LINES
+            continue
+        if line[0] == '.':  # FOR COMMENTS
+            continue
+        if words[0] == "BASE":
+            continue
 
         # FIND INSTRUCTION FORMAT
         instruct, f_size = find_format(words, list(OPTAB.keys()))
@@ -42,33 +48,68 @@ def pass_1(lines):
 
 def find_format(words, keys):
     # RETURNS INSTRUCT , FORMAT_SIZE(int) || SYMBOL_NAME
+
+    signature_sign = words[0][0]
+    # If signature_sign found remove it
+    format_ = -1
+    # FORMAT 4
+    if signature_sign == '+':
+        format_ = 4
+        words[0] = words[0][1:]
+    # FORMAT 5
+    if signature_sign == '&':
+        format_ = 5
+        words[0] = words[0][1:]
+    # FORMAT 6
+    if signature_sign == '$':
+        format_ = 6
+        words[0] = words[0][1:]
     instruct = [value for value in words if value in keys]
 
-    f_type = 1  # DEF FORMAT_1 FOR NOW
     if instruct:
         instruct = instruct[0]
-
         f_type = OPTAB[instruct][1]
 
-        # MYSTERY FORMATS CHECK
-        is_format_6 = [word for word in words if '$' in word]
-        if is_format_6:
+        if format_ == 4:
             return instruct, 4
-        is_format_5 = [word for word in words if '&' in word]
-        if is_format_5:
+        if format_ == 5:
             return instruct, 3
+        if format_ == 6:
+            return instruct, 4
 
          # format 3 or 4 instruction
         if f_type == 12:
-            type_ = [word for word in words if '+' in word]
-            if type_:
-                return instruct, 4
             return instruct, 3
 
         return instruct, int(f_type)
     else:
         # SYMBOL DECLARATIONS OR DIRS
         return "SYMBOL", 0
+
+
+def is_instruction(word):
+    keys = list(OPTAB.keys())
+    # RETURNS loc_ctr_step
+    loc_ctr_step = -1
+    if word[0] == '+':
+        loc_ctr_step = 4
+        word = word[1:]
+    if word[0] == '$':
+        loc_ctr_step = 4
+        word = word[1:]
+    if word[0] == '&':
+        loc_ctr_step = 3
+        word = word[1:]
+    
+    if loc_ctr_step != -1:
+        return loc_ctr_step
+
+    if word in keys:
+        type_ = OPTAB[word][1]
+        if type_ == 12:
+            return 3
+        return type_
+    return -1
 
 
 def declare_symbol(line, LOC_CTR, SYM_TAB):
@@ -97,6 +138,10 @@ def declare_symbol(line, LOC_CTR, SYM_TAB):
     if type_ == "WORD":
         loc_ctr_step = 3
 
+    if loc_ctr_step != 0:
+        return success, loc_ctr_step
+    # CHECK IF ITS A LABEL TO AN INSTRUCTION
+    loc_ctr_step = is_instruction(type_)
     return success, loc_ctr_step
 
 

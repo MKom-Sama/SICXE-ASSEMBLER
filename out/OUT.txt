@@ -1,7 +1,38 @@
-0x0    : LDA ZERO
-0x3    : STA INDEX
-0x6    : LDX INDEX
-0x9    : ADD +INDEX
-0xd    : INDEX   BYTE 10
-0xe    : VAR RESW 40
-0x86   : VAR2 RESB 12
+0x0    : FIRST     STL    RETADR
+0x3    : LDB    #LENGTH
+0x6    : CLOOP     +JSUB  RDREC
+0xa    : LDA    LENGTH
+0xd    : COMP  0
+0x10   : JEQ    ENDFIL
+0x13   : +JSUB  WRREC
+0x17   : J      CLOOP
+0x1a   : ENDFIL    LDA    EOF
+0x1d   : STA    BUFFER
+0x20   : LDA    3
+0x23   : STA    LENGTH
+0x26   : +JSUB  WRREC
+0x2a   : J      @RETADR
+0x2d   : EOF       RESB   3
+0x30   : RETADR    RESW   1
+0x33   : LENGTH    RESW   1
+0x36   : BUFFER    RESB   4096
+0x1036 : RDREC     CLEAR  X
+0x1038 : CLEAR  A
+0x103a : CLEAR  S
+0x103c : +LDT   4096
+0x1040 : RLOOP     TD     INPUT
+0x1043 : JEQ   RLOOP
+0x1046 : RD     INPUT
+0x1049 : COMPR  A,S
+0x104b : JEQ    EXIT
+0x104e : STCH  BUFFER,X
+0x1051 : TIXR   T
+0x1054 : JLT    RLOOP
+0x1057 : EXIT      STX    LENGTH
+0x105a : RSUB   
+0x105d : INPUT     BYTE   241
+0x105e : WRREC     CLEAR  X
+0x1060 : LDT    LENGTH
+0x1063 : WLOOP     TD     OUTPUT
+0x1066 : JEQ    WLOOP
+0x1069 : LDCH   BUFFER,X

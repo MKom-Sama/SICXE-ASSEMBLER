@@ -6,7 +6,7 @@ OPTAB = {
     "ADDR": [0x90, 2],
     "AND": [0x40, 3*4],
     "CLEAR": [0x40, 2],
-    "COMP": [0xB4, 2],
+    "COMP": [0xB4, 3],
     "COMPF": [0x88, 3*4],
     "COMPR": [0xA0, 2],
     "DIV": [0x24, 3*4],
