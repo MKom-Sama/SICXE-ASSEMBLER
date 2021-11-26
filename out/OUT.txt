@@ -1,0 +1,7 @@
+0x0    : LDA ZERO
+0x3    : STA INDEX
+0x6    : LDX INDEX
+0x9    : ADD +INDEX
+0xd    : INDEX BYTE 10
+0xe    : VAR RESW 40
+0x86   : VAR2 RESB 12
