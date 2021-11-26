@@ -100,7 +100,7 @@ def is_instruction(word):
     if word[0] == '&':
         loc_ctr_step = 3
         word = word[1:]
-    
+
     if loc_ctr_step != -1:
         return loc_ctr_step
 
@@ -154,7 +154,17 @@ def output_symtab(symbol, LOC_CTR):
 
 def output_outtxt(line, current_loc_ctr):
     file = open("out/OUT.txt", "a")
-    file.write(hex(int(current_loc_ctr)).ljust(6) + " : " + line)
+    words = line.split()
+    if len(words) == 3:
+        file.write(hex(int(current_loc_ctr)).ljust(
+            6) + " : " + words[0].ljust(8) + words[1].ljust(6) + " " + words[2].ljust(6) + "\n")
+    elif len(words) == 2:
+        file.write(hex(int(current_loc_ctr)).ljust(6) + " : " +
+                   ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(6) + "\n")
+    else:
+        file.write(hex(int(current_loc_ctr)).ljust(6) + " : " +
+                   ' '.ljust(8) + words[0].ljust(6) + "\n")
+
     file.close()
     return
 
