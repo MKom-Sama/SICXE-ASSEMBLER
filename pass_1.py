@@ -6,14 +6,13 @@ from OPERATION_TABLE import OPTAB
 def pass_1(lines):
     LOC_CTR = [0]  # in DECIMAL
     SYM_TAB = {}
-
     for line in lines:
 
         # REMOVE LEADING SPACES
         line = line.lstrip(" ")
         line = line.rstrip(" ")
 
-        words = line.upper().split(" ")
+        words = line.upper().split()
 
         # SHOULD ADD FLAGS #TODO LATER
         if "START" in words:
