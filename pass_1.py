@@ -2,7 +2,6 @@ from OPERATION_TABLE import OPTAB
 
 # TAKES PROG AS INPUT RETURNS LOC_CTR & SYM_TAB
 
-
 def pass_1(lines):
     LOC_CTR = [0]  # in DECIMAL
     SYM_TAB = {}
