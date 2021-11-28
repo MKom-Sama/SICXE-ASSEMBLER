@@ -134,7 +134,10 @@ def declare_symbol(line, LOC_CTR, SYM_TAB):
     if type_ == "RESW":
         loc_ctr_step = int(line[2])*3
     if type_ == "BYTE":
-        loc_ctr_step = 1
+        if line[2][0:2] == "C'":
+            loc_ctr_step = len(line[2][2:])-1
+        if line[2][0:2] == "X'":
+            loc_ctr_step = len(line[2][2:]) // 2
     if type_ == "WORD":
         loc_ctr_step = 3
 

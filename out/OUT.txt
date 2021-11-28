@@ -12,7 +12,7 @@
 0x23   :         STA    LENGTH
 0x26   :         +JSUB  WRREC 
 0x2a   :         J      @RETADR
-0x2d   : EOF     RESB   3     
+0x2d   : EOF     BYTE   C'EOF'
 0x30   : RETADR  RESW   1     
 0x33   : LENGTH  RESW   1     
 0x36   : BUFFER  RESB   4096  
@@ -31,8 +31,8 @@
 0x1057 : EXIT    STX    LENGTH
 0x105a :         RSUB  
 0x105d : INPUT   BYTE   241   
-0x105e : WRREC   CLEAR  X     
-0x1060 :         LDT    LENGTH
-0x1063 : WLOOP   TD     OUTPUT
-0x1066 :         JEQ    WLOOP 
-0x1069 :         LDCH   BUFFER,X
+0x105c : WRREC   CLEAR  X     
+0x105e :         LDT    LENGTH
+0x1061 : WLOOP   TD     OUTPUT
+0x1064 :         JEQ    WLOOP 
+0x1067 :         LDCH   BUFFER,X
