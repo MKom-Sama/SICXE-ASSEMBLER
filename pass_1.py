@@ -2,6 +2,7 @@ from OPERATION_TABLE import OPTAB
 
 # TAKES PROG AS INPUT RETURNS LOC_CTR & SYM_TAB
 
+
 def pass_1(lines):
     LOC_CTR = [0]  # in DECIMAL
     SYM_TAB = {}
@@ -27,17 +28,32 @@ def pass_1(lines):
             continue
 
         # FIND INSTRUCTION FORMAT
-        instruct, f_size = find_format(words, list(OPTAB.keys()))
+        instruct, f_size, is_label = find_format(words, list(OPTAB.keys()))
 
         loc_ctr_step = f_size
-        if instruct == "SYMBOL":
-            valid, loc_ctr_step = declare_symbol(words, LOC_CTR[-1], SYM_TAB)
-            if valid:
-                SYM_TAB[words[0]] = LOC_CTR[-1]
-            else:
-                # INVALID SYMBOL DECLARATION
-                stop_process(words[0] + " already declared! \n" + "at : "+line)
-                return
+
+        valid_symbol_declaration = False
+        declared_symbol = False
+
+        # FOR SYMBOLS AND LABELS
+        if is_label == True:
+            declared_symbol = True
+            valid_symbol_declaration, not_used = declare_symbol(
+                words, LOC_CTR[-1], SYM_TAB, True)
+        elif instruct == "SYMBOL":
+            declared_symbol = True
+            valid_symbol_declaration, loc_ctr_step = declare_symbol(
+                words, LOC_CTR[-1], SYM_TAB, False)
+
+        # CHECK FOR REDECLARATION ERRORS
+
+        if declared_symbol and (valid_symbol_declaration):
+            SYM_TAB[words[0]] = LOC_CTR[-1]
+        elif declared_symbol and (not valid_symbol_declaration):
+            # INVALID SYMBOL DECLARATION
+            stop_process(words[0] + " already declared! \n" + "at : "+line)
+            return
+
         # PRINT TO OUT.txt
         output_outtxt(line, LOC_CTR[-1])
 
@@ -47,44 +63,62 @@ def pass_1(lines):
 
 
 def find_format(words, keys):
-    # RETURNS INSTRUCT , FORMAT_SIZE(int) || SYMBOL_NAME
+    # RETURNS INSTRUCT, FORMAT_SIZE(int), IS_LABEL
+    is_label = False
+    if len(words) == 3:
+        instruct = words[1]
+        is_label = True
+    else:
+        instruct = words[0]
 
-    signature_sign = words[0][0]
+    # IF ITS BYTE | RESB | WORD | RESW
+    if is_symbol_declare(instruct):
+        return "SYMBOL", 0, False
+
+    signature_sign = instruct[0]
     # If signature_sign found remove it
     format_ = -1
     # FORMAT 4
     if signature_sign == '+':
         format_ = 4
-        words[0] = words[0][1:]
+        instruct = instruct[1:]
     # FORMAT 5
     if signature_sign == '&':
         format_ = 5
-        words[0] = words[0][1:]
+        instruct = instruct[1:]
     # FORMAT 6
     if signature_sign == '$':
         format_ = 6
-        words[0] = words[0][1:]
-    instruct = [value for value in words if value in keys]
+        instruct = instruct[1:]
 
-    if instruct:
-        instruct = instruct[0]
-        f_type = OPTAB[instruct][1]
+    # OTHER FORMATS
+    try:
+        find_format = OPTAB[instruct][1]
+        if format_ == -1:
+            format_ = find_format
+            if find_format == 12:
+                format_ = 3
+    except:
+        stop_process('Invalid Instruction')
+        return
 
-        if format_ == 4:
-            return instruct, 4
-        if format_ == 5:
-            return instruct, 3
-        if format_ == 6:
-            return instruct, 4
+    # RETURNING INSTRUCTION SIZE
 
-         # format 3 or 4 instruction
-        if f_type == 12:
-            return instruct, 3
+    if format_ == 1:
+        return instruct, 1, is_label
+    if format_ == 2:
+        return instruct, 2, is_label
+    if format_ == 3:
+        return instruct, 3, is_label
+    if format_ == 4:
+        return instruct, 4, is_label
+    if format_ == 5:
+        return instruct, 3, is_label
+    if format_ == 6:
+        return instruct, 4, is_label
 
-        return instruct, int(f_type)
-    else:
-        # SYMBOL DECLARATIONS OR DIRS
-        return "SYMBOL", 0
+    # SHOULDN'T REACH THIS RETURN
+    return "Symbol", 0, False
 
 
 def is_instruction(word):
@@ -112,15 +146,26 @@ def is_instruction(word):
     return -1
 
 
-def declare_symbol(line, LOC_CTR, SYM_TAB):
-    # returns success , loc_ctr_step(int)
+def is_symbol_declare(word):
+    return word == "BYTE" or word == "RESB" or word == "WORD" or word == "RESW"
+
+
+def declare_symbol(line, LOC_CTR, SYM_TAB, is_label):
+    # returns SUCESS , LOC_CTR_STEP(int)
+
     # Writes to SYMBOL_TABLE FILE
     symbol = line[0]
     type_ = line[1]
 
+
     # CHECK IF SYMBOL ALREADY DECLARED
     if symbol in SYM_TAB.keys():
         return False, -1
+
+    # DECLARING JUST A LABEL
+    if is_label:
+        output_symtab(symbol, LOC_CTR)
+        return True, -1
 
     # CHECK THE TYPE OF line[2] (default decimal for now)
 

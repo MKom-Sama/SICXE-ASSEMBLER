@@ -16,3 +16,4 @@ if "START" not in lines[0].upper().split(" "):
     print("First line needs to have start keyword")
 
 loc_ctr, sym_tab = pass_1(lines)
+
