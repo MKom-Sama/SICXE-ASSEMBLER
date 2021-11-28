@@ -18,6 +18,7 @@ def pass_1(lines):
         if "START" in words:
             continue
         if "END" in words:
+            print("Finished Pass one!")
             break
         if not words:  # FOR EMPTY LINES
             continue
@@ -150,7 +151,8 @@ def declare_symbol(line, LOC_CTR, SYM_TAB):
 
 def output_symtab(symbol, LOC_CTR):
     file = open("out/SYMBOL_TABLE.txt", "a")
-    file.write(symbol + " " + hex(int(LOC_CTR)) + "\n")
+    addr = '0x' + hex(int(LOC_CTR))[2:].upper()
+    file.write(addr.ljust(6) + " " + symbol + "\n")
     file.close()
     return
 
@@ -158,14 +160,15 @@ def output_symtab(symbol, LOC_CTR):
 def output_outtxt(line, current_loc_ctr):
     file = open("out/OUT.txt", "a")
     words = line.split()
+    addr = '0x' + hex(int(current_loc_ctr))[2:].upper()
     if len(words) == 3:
-        file.write(hex(int(current_loc_ctr)).ljust(
+        file.write(addr.ljust(
             6) + " : " + words[0].ljust(8) + words[1].ljust(6) + " " + words[2].ljust(6) + "\n")
     elif len(words) == 2:
-        file.write(hex(int(current_loc_ctr)).ljust(6) + " : " +
+        file.write(addr.ljust(6) + " : " +
                    ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(6) + "\n")
     else:
-        file.write(hex(int(current_loc_ctr)).ljust(6) + " : " +
+        file.write(addr.ljust(6) + " : " +
                    ' '.ljust(8) + words[0].ljust(6) + "\n")
 
     file.close()
