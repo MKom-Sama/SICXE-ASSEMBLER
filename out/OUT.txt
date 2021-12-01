@@ -1,43 +1,43 @@
-0x0    : FIRST   STL    RETADR
-0x3    :         LDB    #LENGTH
-0x6    : CLOOP   +JSUB  RDREC 
-0xA    :         LDA    LENGTH
-0xD    :         COMP   #0    
-0x10   :         JEQ    ENDFIL
-0x13   :         +JSUB  WRREC 
-0x17   :         J      CLOOP 
-0x1A   : ENDFIL  LDA    EOF   
-0x1D   :         STA    BUFFER
-0x20   :         LDA    #3    
-0x23   :         STA    LENGTH
-0x26   :         +JSUB  WRREC 
-0x2A   :         J      @RETADR
-0x2D   : EOF     BYTE   C'EOF'
-0x30   : RETADR  RESW   1     
-0x33   : LENGTH  RESW   1     
-0x36   : BUFFER  RESB   4096  
-0x1036 : RDREC   CLEAR  X     
-0x1038 :         CLEAR  A     
-0x103A :         CLEAR  S     
-0x103C :         +LDT   4096  
-0x1040 : RLOOP   TD     INPUT 
-0x1043 :         JEQ    RLOOP 
-0x1046 :         RD     INPUT 
-0x1049 :         COMPR  A,S   
-0x104B :         JEQ    EXIT  
-0x104E :         STCH   BUFFER,X
-0x1051 :         TIXR   T     
-0x1053 :         JLT    RLOOP 
-0x1056 : EXIT    STX    LENGTH
-0x1059 :         RSUB  
-0x105C : INPUT   BYTE   X'F1' 
-0x105D : WRREC   CLEAR  X     
-0x105F :         LDT    LENGTH
-0x1062 : WLOOP   TD     OUTPUT
-0x1065 :         JEQ    WLOOP 
-0x1068 :         LDCH   BUFFER,X
-0x106B :         WD     OUTPUT
-0x106E :         TIXR   T     
-0x1070 :         JLT    WLOOP 
-0x1073 :         RSUB  
-0x1076 : OUTPUT  BYTE   X'05' 
+0x1000 : FIRST   STL    RETADR
+0x1003 :         LDB    #LENGTH
+0x1006 : CLOOP   +JSUB  RDREC 
+0x100A :         LDA    LENGTH
+0x100D :         COMP   #0    
+0x1010 :         JEQ    ENDFIL
+0x1013 :         +JSUB  WRREC 
+0x1017 :         J      CLOOP 
+0x101A : ENDFIL  LDA    EOF   
+0x101D :         STA    BUFFER
+0x1020 :         LDA    #3    
+0x1023 :         STA    LENGTH
+0x1026 :         +JSUB  WRREC 
+0x102A :         J      @RETADR
+0x102D : EOF     BYTE   C'EOF'
+0x1030 : RETADR  RESW   1     
+0x1033 : LENGTH  RESW   1     
+0x1036 : BUFFER  RESB   4096  
+0x2036 : RDREC   CLEAR  X     
+0x2038 :         CLEAR  A     
+0x203A :         CLEAR  S     
+0x203C :         +LDT   4096  
+0x2040 : RLOOP   TD     INPUT 
+0x2043 :         JEQ    RLOOP 
+0x2046 :         RD     INPUT 
+0x2049 :         COMPR  A,S   
+0x204B :         JEQ    EXIT  
+0x204E :         STCH   BUFFER,X
+0x2051 :         TIXR   T     
+0x2053 :         JLT    RLOOP 
+0x2056 : EXIT    STX    LENGTH
+0x2059 :         RSUB  
+0x205C : INPUT   BYTE   X'F1' 
+0x205D : WRREC   CLEAR  X     
+0x205F :         LDT    LENGTH
+0x2062 : WLOOP   TD     OUTPUT
+0x2065 :         JEQ    WLOOP 
+0x2068 :         LDCH   BUFFER,X
+0x206B :         WD     OUTPUT
+0x206E :         TIXR   T     
+0x2070 :         JLT    WLOOP 
+0x2073 :         RSUB  
+0x2076 : OUTPUT  BYTE   X'05' 

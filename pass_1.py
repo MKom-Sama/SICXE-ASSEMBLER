@@ -4,7 +4,7 @@ from OPERATION_TABLE import OPTAB
 
 
 def pass_1(lines):
-    LOC_CTR = [0]  # in DECIMAL
+    LOC_CTR = []  # in DECIMAL
     SYM_TAB = {}
     for line in lines:
 
@@ -16,7 +16,12 @@ def pass_1(lines):
 
         # SHOULD ADD FLAGS #TODO LATER
         if "START" in words:
-            continue
+            if not LOC_CTR:         
+                LOC_CTR.append(int(words[2],16));
+                continue;
+            else:
+                stop_process("Found another START , not good")
+                break;
         if "END" in words:
             print("Finished Pass one!")
             break
