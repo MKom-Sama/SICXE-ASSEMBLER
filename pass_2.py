@@ -124,9 +124,8 @@ def handle_format_two():
 def handle_format_three(words, OPCODE, meta, PC):
     meta['PC'] = PC
     opni, words = opni_hex(words, OPCODE)
-
+    
     xbpe, disp = xbpe_hex(words, meta)
-
     return opni + xbpe + disp
 
 
@@ -152,10 +151,8 @@ def opni_hex(words, OPCODE):
     idx = 0
     if len(words) == 3:
         idx = 2
-        sign = words[0][0]
     elif len(words) == 2:
         idx = 1
-        sign = words[1][0]
 
     if words[idx][0] == '@':
         ni = 2
@@ -206,7 +203,7 @@ def xbpe_hex(words, meta):
             addr = sym_tab[words[idx+1]]
 
         # bp = 00 in format_4
-        return hex(xbpe)[2:], '0'+hex(addr)[2:]
+        return hex(xbpe)[2:], '0'.ljust(abs(len(hex(addr))-7), '0')+hex(addr)[2:]
 
     # bp ?
     # var or num
