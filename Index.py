@@ -1,4 +1,5 @@
 from pass_1 import pass_1
+from pass_2 import pass_2
 
 # READING INPUT FILE
 with open('assembly.txt') as f:
@@ -16,4 +17,4 @@ if "START" not in lines[0].upper().split(" "):
     print("First line needs to have start keyword")
 
 loc_ctr, sym_tab = pass_1(lines)
-
+pass_2(lines,sym_tab,loc_ctr)
