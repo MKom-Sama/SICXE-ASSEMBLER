@@ -47,9 +47,6 @@ def pass_2(lines, sym_tab, loc_ctr):
         instruct, format_type = find_format(words, list(OPTAB.keys()))
 
         OPCODE = OPTAB[instruct][0]
-        if format_type == 2:
-            idx += 1
-            continue
 
         if format_type == 5:
             idx += 1
@@ -61,6 +58,11 @@ def pass_2(lines, sym_tab, loc_ctr):
         if format_type == 1:
             idx += 1
             OBJ_CODE.append(handle_format_one(OPCODE))
+            continue
+
+        if format_type == 2:
+            idx += 1
+            OBJ_CODE.append(handle_format_two(words, OPCODE))
             continue
 
         if format_type == 3:
@@ -117,14 +119,30 @@ def handle_format_one(OPCODE):
     return OPCODE
 
 
-def handle_format_two():
-    return
+def handle_format_two(words, OPCODE):
+
+    idx = 0
+    if (len(words) == 3):
+        idx = 1
+    r1r2 = words[idx+1].split(',')
+
+    # Check for SHIFTL/R & SVC since they take numbers
+    if OPCODE == OPTAB['SHIFTL'][0] or OPCODE == OPTAB['SHIFTR'][0]:
+        return hex(OPCODE) + str(REGISTERS[r1r2[0]]) + hex(int(r1r2[1]))[2]
+
+    if OPCODE == OPTAB['SVC'][0]:
+        return hex(OPCODE) + hex(int(r1r2[0]))[2] + '0'
+    
+    if len(r1r2) == 2:
+        return hex(OPCODE) + str(REGISTERS[r1r2[0]]) + str(REGISTERS[r1r2[1]])
+
+    return hex(OPCODE) + str(REGISTERS[r1r2[0]]) + '0'
 
 
 def handle_format_three(words, OPCODE, meta, PC):
     meta['PC'] = PC
     opni, words = opni_hex(words, OPCODE)
-    
+
     xbpe, disp = xbpe_hex(words, meta)
     return opni + xbpe + disp
 
