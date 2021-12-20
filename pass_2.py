@@ -41,6 +41,7 @@ def pass_2(lines, sym_tab, loc_ctr):
 
         if "BYTE" in words or "WORD" in words:  # TODO LATER
             idx = idx+1
+            OBJ_CODE.append(data_definition(words))
             continue
 
         # HAS OBJECT CODE & IS INSTRUCTION
@@ -76,7 +77,7 @@ def pass_2(lines, sym_tab, loc_ctr):
             continue
     print('Finished Pass two!')
     output_objcode(OBJ_CODE)
-    return -1
+    return OBJ_CODE
 
 
 def find_format(words, keys):
@@ -132,7 +133,7 @@ def handle_format_two(words, OPCODE):
 
     if OPCODE == OPTAB['SVC'][0]:
         return hex(OPCODE) + hex(int(r1r2[0]))[2] + '0'
-    
+
     if len(r1r2) == 2:
         return hex(OPCODE) + str(REGISTERS[r1r2[0]]) + str(REGISTERS[r1r2[1]])
 
@@ -161,6 +162,44 @@ def handle_format_five():
 
 def handle_format_six():
     return
+
+
+def data_definition(words):
+    # Returns object code of Byte & Word
+
+    varSize = 1  # byte
+    if "WORD" in words:
+        varSize = 3  # byte
+
+    # Must be VarName : Datatype : Value
+    if (len(words) != 3):
+        return 'Invalid Data Declaration'
+
+    arrOfData = words[2].split(',')
+
+    obj_code = '0x'
+    for data in arrOfData:
+        try:
+            num = hex(int(data))[2:]
+            # check for valid size
+            if (len(num) > varSize*2):
+                return 'Invalid Size'
+            fillChar = '' if abs(len(num)-varSize*2) == 0 else '0'
+            obj_code += fillChar.ljust(abs(len(num)-varSize*2),'0') +  num;
+            
+        except:
+            # X' || C'
+            if data[0] == 'C':
+                arrOfChars = data[2:-1]
+                for char in arrOfChars:
+                    hexed = hex(ord(char))[2:]
+                    fillChar = '' if abs(len(hexed)-varSize*2) == 0 else '0'
+                    obj_code += fillChar.ljust(abs(len(hexed)-varSize*2),'0') + hexed
+            if data[0] == 'X':
+                hexed = data[2:-1]
+                fillChar = '' if abs(len(hexed)-varSize*2) == 0 else '0'
+                obj_code += fillChar.ljust(abs(len(hexed)-varSize*2),'0') + hexed          
+    return obj_code
 
 
 def opni_hex(words, OPCODE):
