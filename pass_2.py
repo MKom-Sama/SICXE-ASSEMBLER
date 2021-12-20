@@ -183,7 +183,9 @@ def data_definition(words):
             num = hex(int(data))[2:]
             # check for valid size
             if (len(num) > varSize*2):
-                return 'Invalid Size'
+                stop_process('Invalid Data Size')
+                return
+
             fillChar = '' if abs(len(num)-varSize*2) == 0 else '0'
             obj_code += fillChar.ljust(abs(len(num)-varSize*2),'0') +  num;
             
