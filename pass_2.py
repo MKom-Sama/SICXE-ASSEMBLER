@@ -1,13 +1,19 @@
 from OPERATION_TABLE import OPTAB
 from REGISTERS import REGISTERS
 
+from utils import output_HTE
+
 
 def pass_2(lines, sym_tab, loc_ctr):
-    OBJ_CODE = []
-    idx = 0
-
     meta = {'sym_tab': sym_tab, 'loc_ctr': loc_ctr}
+    OBJ_CODE = []
+    idx = 0  # Loc_ctr pointer
 
+    # FOR HTE
+    MODIFIED = []  # Contains {'address': , 'half_byte': ,'value':}
+    prog_name = ''
+    first_exe_loc = -1
+    # Get Object Code
     for line in lines:
         # REMOVE LEADING SPACES
         line = line.lstrip(" ")
@@ -20,6 +26,7 @@ def pass_2(lines, sym_tab, loc_ctr):
             break
 
         if "START" in words:
+            prog_name = words[0]
             continue
 
         if "END" in words:
@@ -33,6 +40,7 @@ def pass_2(lines, sym_tab, loc_ctr):
 
         if "RESB" in words or "RESW" in words:
             idx = idx + 1
+            OBJ_CODE.append(None)
             continue
 
         if "BASE" in words:
@@ -43,6 +51,10 @@ def pass_2(lines, sym_tab, loc_ctr):
             idx = idx+1
             OBJ_CODE.append(data_definition(words))
             continue
+
+        # FOR HTE FIRST EXECUTABLE INSTRUCTION
+        if first_exe_loc == -1:
+            first_exe_loc = hex(loc_ctr[idx])
 
         # HAS OBJECT CODE & IS INSTRUCTION
         instruct, format_type = find_format(words, list(OPTAB.keys()))
@@ -76,6 +88,10 @@ def pass_2(lines, sym_tab, loc_ctr):
             OBJ_CODE.append(handle_format_four(words, OPCODE, meta, PC))
             continue
     print('Finished Pass two!')
+
+    # HTE Output
+    output_HTE(prog_name, OBJ_CODE, MODIFIED, loc_ctr, first_exe_loc)
+
     output_objcode(OBJ_CODE)
     return OBJ_CODE
 
@@ -187,8 +203,8 @@ def data_definition(words):
                 return
 
             fillChar = '' if abs(len(num)-varSize*2) == 0 else '0'
-            obj_code += fillChar.ljust(abs(len(num)-varSize*2),'0') +  num;
-            
+            obj_code += fillChar.ljust(abs(len(num)-varSize*2), '0') + num
+
         except:
             # X' || C'
             if data[0] == 'C':
@@ -196,11 +212,13 @@ def data_definition(words):
                 for char in arrOfChars:
                     hexed = hex(ord(char))[2:]
                     fillChar = '' if abs(len(hexed)-varSize*2) == 0 else '0'
-                    obj_code += fillChar.ljust(abs(len(hexed)-varSize*2),'0') + hexed
+                    obj_code += fillChar.ljust(abs(len(hexed) -
+                                               varSize*2), '0') + hexed
             if data[0] == 'X':
                 hexed = data[2:-1]
                 fillChar = '' if abs(len(hexed)-varSize*2) == 0 else '0'
-                obj_code += fillChar.ljust(abs(len(hexed)-varSize*2),'0') + hexed          
+                obj_code += fillChar.ljust(abs(len(hexed) -
+                                           varSize*2), '0') + hexed
     return obj_code
 
 
@@ -309,6 +327,9 @@ def twos_complement(val, nbits):
 def output_objcode(OBJ_CODE):
     file = open("out/OBJECT_CODE.txt", "w")
     for obj in OBJ_CODE:
+        if obj == None:
+            file.write('NONE \n')
+            continue
         file.write('0x' + obj[2:].upper() + "\n")
 
     file.close()
