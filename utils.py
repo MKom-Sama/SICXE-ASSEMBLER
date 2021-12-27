@@ -46,6 +46,13 @@ def output_HTE(prog_name, OBJ_CODE, MODIFIED, loc_ctr, first_exe):
         file.write('T.' + format_hex_size(hex(start_addr), 6).upper() + '.' +
                    format_hex_size(hex(end_addr-start_addr), 2).upper() + '.' + T_code + '\n')
 
+       # M Record
+    
+    # M Record
+    for mod in MODIFIED:
+        file.write(
+            'M.'+format_hex_size(hex(mod['address']), 6)+'.'+mod['half-byte']+mod['value']+'\n')
+
     # E Record
     file.write('E.'+format_hex_size(first_exe, 6).upper() + '\n')
 

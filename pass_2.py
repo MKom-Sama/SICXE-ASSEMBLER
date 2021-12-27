@@ -10,7 +10,10 @@ def pass_2(lines, sym_tab, loc_ctr):
     idx = 0  # Loc_ctr pointer
 
     # FOR HTE
-    MODIFIED = []  # Contains {'address': , 'half_byte': ,'value':}
+    global MODIFIED  # Contains {'address': , 'half_byte': ,'value':}
+    global prog_name
+
+    MODIFIED = []
     prog_name = ''
     first_exe_loc = -1
     # Get Object Code
@@ -278,6 +281,9 @@ def xbpe_hex(words, meta):
             addr = num
         except:
             addr = sym_tab[words[idx+1]]
+            # To Be Modified in M record
+            MODIFIED.append({'address': loc_ctr[loc_ctr.index(
+                PC)-1]+1, 'half-byte': '05', 'value': '+'+prog_name})
 
         # bp = 00 in format_4
         return hex(xbpe)[2:], '0'.ljust(abs(len(hex(addr))-7), '0')+hex(addr)[2:]
