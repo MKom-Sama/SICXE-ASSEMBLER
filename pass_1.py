@@ -196,9 +196,9 @@ def declare_symbol(line, LOC_CTR, SYM_TAB, is_label):
 def output_symtab(symbol, LOC_CTR):
     file = open("out/SYMBOL_TABLE.txt", "a")
     addr = '0x' + hex(int(LOC_CTR))[2:].upper()
-    file.write('-'.ljust(20,'-')+'\n')
-    file.write('| ' +addr.ljust(6) + " : " + symbol.ljust(8) + '| \n')
-    file.write('-'.ljust(20,'-')+'\n')
+    file.write('-'.ljust(23,'-')+'\n')
+    file.write('| ' +symbol.ljust(8) + " : " + addr.ljust(8) + ' | \n')
+    file.write('-'.ljust(23,'-')+'\n')
     file.close()
     return
 
