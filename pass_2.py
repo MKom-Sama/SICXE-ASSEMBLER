@@ -64,13 +64,6 @@ def pass_2(lines, sym_tab, loc_ctr):
 
         OPCODE = OPTAB[instruct][0]
 
-        if format_type == 5:
-            idx += 1
-            continue
-        if format_type == 6:
-            idx += 1
-            continue
-
         if format_type == 1:
             idx += 1
             OBJ_CODE.append(handle_format_one(OPCODE))
@@ -90,6 +83,17 @@ def pass_2(lines, sym_tab, loc_ctr):
             idx += 1
             OBJ_CODE.append(handle_format_four(words, OPCODE, meta, PC))
             continue
+
+        if format_type == 5:
+            idx += 1
+            OBJ_CODE.append(handle_format_five(words, OPCODE, meta, PC))
+            continue
+
+        if format_type == 6:
+            idx += 1
+            OBJ_CODE.append(handle_format_six(words, OPCODE, meta, PC))
+            continue
+
     print('Finished Pass two!')
 
     # HTE Output
@@ -175,12 +179,58 @@ def handle_format_four(words, OPCODE, meta, PC):
     return opni + xbpe + addr
 
 
-def handle_format_five():
-    return
+def handle_format_five(words, OPCODE, meta, PC):
+    meta['PC'] = PC
+
+    opf1f2 = OPCODE
+
+    xbpe, disp = xbpe_hex(words, meta)
+
+    disp_val = int('0x'+disp, 16)
+    xbpf3 = xbpe
+    # F1 ? disp is even
+    if (disp_val % 2 == 0):
+        opf1f2 += 2
+    # F2 ? disp is -ve (check for signed bit)
+    if (disp_val & 0x800):
+        opf1f2 += 1
+
+    # F3 ? disp = 0
+    if (disp_val == 0):
+        xbpf3 = hex(int('0x'+xbpe, 16)+1)[2:]
+
+    return hex(opf1f2) + xbpf3 + disp
 
 
-def handle_format_six():
-    return
+def handle_format_six(words, OPCODE, meta, PC):
+    meta['PC'] = PC
+    opni, words = opni_hex(words, OPCODE)
+
+    not_used, addr = xbpe_hex(words, meta)
+
+    addr_val = int('0x'+addr, 16)
+
+    xbpe = 0
+    idx = 0
+    if len(words) == 3:
+        idx = 1
+    # X  ?
+    if (words[idx+1].split(',')[-1] == 'X'):
+        xbpe += 8
+
+    # F4 ?  addr is odd
+    if (addr_val % 2 != 0):
+        xbpe += 4
+
+    # F5 ? addr not zero
+    if (addr_val != 0):
+        xbpe += 2
+
+    # F6 ? addr = BASE
+    if (addr_val == REGISTERS['B'][1]):
+        xbpe += 1
+
+    return opni + hex(xbpe)[2:] + addr
 
 
 def data_definition(words):
@@ -252,6 +302,7 @@ def opni_hex(words, OPCODE):
 
 def xbpe_hex(words, meta):
     # Returns xbpe , disp || addr
+    # * USES A GLOBAL VARIABLE 'MODIFIED'
     xbpe = 0
     loc_ctr = meta['loc_ctr']
     sym_tab = meta['sym_tab']
@@ -272,8 +323,8 @@ def xbpe_hex(words, meta):
         # remove ,X no use for it
         words[idx+1] = words[idx+1].split(',')[0]
 
-    # e ?
-    if (words[idx][0] == '+'):
+    # e ? or f6
+    if (words[idx][0] == '+' or words[idx][0] == '$'):
         xbpe += 1
         addr = 0
         try:
