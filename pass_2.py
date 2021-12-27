@@ -99,7 +99,6 @@ def pass_2(lines, sym_tab, loc_ctr):
     # HTE Output
     output_HTE(prog_name, OBJ_CODE, MODIFIED, loc_ctr, first_exe_loc)
 
-    output_objcode(OBJ_CODE)
     return OBJ_CODE
 
 
@@ -379,18 +378,6 @@ def twos_complement(val, nbits):
             # compute negative value.
             val = val - (1 << nbits)
     return val
-
-
-def output_objcode(OBJ_CODE):
-    file = open("out/OBJECT_CODE.txt", "w")
-    for obj in OBJ_CODE:
-        if obj == None:
-            file.write('NONE \n')
-            continue
-        file.write('0x' + obj[2:].upper() + "\n")
-
-    file.close()
-    return
 
 
 def stop_process(msg):

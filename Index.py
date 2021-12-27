@@ -1,7 +1,7 @@
 from pass_1 import pass_1
 from pass_2 import pass_2
 
-
+from utils import output_outtxt
 # READING INPUT FILE
 with open('assembly.txt') as f:
     lines = f.readlines()
@@ -23,3 +23,6 @@ loc_ctr, sym_tab = pass_1(lines)
 obj_code = []
 obj_code = pass_2(lines,sym_tab,loc_ctr)
 
+
+# OUTPUT FILE
+output_outtxt(loc_ctr,lines,obj_code)

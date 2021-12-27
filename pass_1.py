@@ -57,9 +57,6 @@ def pass_1(lines):
             stop_process(words[0] + " already declared! \n" + "at : "+line)
             return
 
-        # PRINT TO OUT.txt
-        output_outtxt(line, LOC_CTR[-1])
-
         LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
 
     return LOC_CTR, SYM_TAB
@@ -199,28 +196,11 @@ def declare_symbol(line, LOC_CTR, SYM_TAB, is_label):
 def output_symtab(symbol, LOC_CTR):
     file = open("out/SYMBOL_TABLE.txt", "a")
     addr = '0x' + hex(int(LOC_CTR))[2:].upper()
-    file.write(addr.ljust(6) + " " + symbol + "\n")
+    file.write('-'.ljust(20,'-')+'\n')
+    file.write('| ' +addr.ljust(6) + " : " + symbol.ljust(8) + '| \n')
+    file.write('-'.ljust(20,'-')+'\n')
     file.close()
     return
-
-
-def output_outtxt(line, current_loc_ctr):
-    file = open("out/OUT.txt", "a")
-    words = line.split()
-    addr = '0x' + hex(int(current_loc_ctr))[2:].upper()
-    if len(words) == 3:
-        file.write(addr.ljust(
-            6) + " : " + words[0].ljust(8) + words[1].ljust(6) + " " + words[2].ljust(6) + "\n")
-    elif len(words) == 2:
-        file.write(addr.ljust(6) + " : " +
-                   ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(6) + "\n")
-    else:
-        file.write(addr.ljust(6) + " : " +
-                   ' '.ljust(8) + words[0].ljust(6) + "\n")
-
-    file.close()
-    return
-
 
 def stop_process(msg):
     print('\033[91m'

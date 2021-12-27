@@ -46,7 +46,6 @@ def output_HTE(prog_name, OBJ_CODE, MODIFIED, loc_ctr, first_exe):
         file.write('T.' + format_hex_size(hex(start_addr), 6).upper() + '.' +
                    format_hex_size(hex(end_addr-start_addr), 2).upper() + '.' + T_code + '\n')
 
-    
     # M Record
     for mod in MODIFIED:
         file.write(
@@ -62,3 +61,79 @@ def output_HTE(prog_name, OBJ_CODE, MODIFIED, loc_ctr, first_exe):
 def format_hex_size(object_code, size):
     fillChar = '' if abs(len(object_code[2:])-size) == 0 else '0'
     return fillChar.ljust(abs(len(object_code[2:])-size), '0') + object_code[2:]
+
+
+def output_symtab(symbol, LOC_CTR):
+    file = open("out/SYMBOL_TABLE.txt", "a")
+    addr = '0x' + hex(int(LOC_CTR))[2:].upper()
+    file.write(addr.ljust(6) + " " + symbol + "\n")
+    file.close()
+    return
+
+
+def output_outtxt(loc_ctr, lines, obj_code):
+    file = open("out/OUT.txt", "a")
+
+    idx = 0
+    for line in lines:
+        # REMOVE LEADING SPACES
+        line = line.lstrip(" ")
+        line = line.rstrip(" ")
+
+        words = line.upper().split()
+
+        if "START" in words:
+            continue
+        if "BASE" in words:
+            file.write('-'.ljust(48, '-') + '\n')
+            file.write('| ' + addr.ljust(6) + ' : ')
+            file.write(
+                ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(10))
+            file.write('-'.ljust(12).upper()[2:] + ' |' + '\n')
+            continue
+        if not words:
+            continue
+
+        if line[0] == '.':  # FOR COMMENTS
+            continue
+
+        addr = '0x' + hex(loc_ctr[idx])[2:].upper()
+
+        file.write('-'.ljust(48, '-') + '\n')
+
+        file.write('| ' + addr.ljust(6) + ' : ')
+        if len(words) == 3:
+            file.write(words[0].ljust(8) +
+                       words[1].ljust(6) + " " + words[2].ljust(10))
+        elif len(words) == 2:
+            file.write(
+                ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(10))
+        else:
+            file.write(
+                ' '.ljust(8) + words[0].ljust(6) + " " + ' '.ljust(10))
+
+        if(idx == len(obj_code)):
+            file.write('-'.ljust(12).upper()[2:] + ' |' + '\n')
+            break
+
+        obj = '-' if obj_code[idx] == None else obj_code[idx]
+        file.write(obj.ljust(12).upper()[2:] + ' |' + '\n')
+
+        idx += 1
+
+    file.write('-'.ljust(48, '-') + '\n')
+    file.close()
+    return
+
+# * TESTING FUNCTION
+def output_objcode(OBJ_CODE):
+    file = open("out/OBJECT_CODE.txt", "w")
+    for obj in OBJ_CODE:
+        if obj == None:
+            file.write('NONE \n')
+            continue
+        file.write('0x' + obj[2:].upper() + "\n")
+
+    file.close()
+    return
+
