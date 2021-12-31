@@ -4,10 +4,18 @@ from REGISTERS import REGISTERS
 from utils import output_HTE
 
 
-def pass_2(lines, sym_tab, loc_ctr):
-    meta = {'sym_tab': sym_tab, 'loc_ctr': loc_ctr}
+def pass_2(lines, sym_tab, loc_ctr, lit_tab):
+
+    # Merge sym_tab & lit_tab
+    merged = {}
+    merged.update(sym_tab)
+    merged.update(lit_tab)
+    meta = {'sym_tab': merged, 'loc_ctr': loc_ctr}
     OBJ_CODE = []
+
     idx = 0  # Loc_ctr pointer
+
+    lit_idx = 0  # Lit_tab pointer (first literal)
 
     # FOR HTE
     global MODIFIED  # Contains {'address': , 'half_byte': ,'value':}
@@ -55,6 +63,21 @@ def pass_2(lines, sym_tab, loc_ctr):
             OBJ_CODE.append(data_definition(words))
             continue
 
+        if "LTORG" in words:
+
+            if lit_idx == len(list(lit_tab.keys())):
+                continue
+
+            while lit_tab[list(lit_tab.keys())[lit_idx]] == loc_ctr[idx]:
+
+                OBJ_CODE.append(data_definition(["*", "BYTE", (list(lit_tab.keys())[lit_idx])[1:]]))
+
+                lit_idx += 1
+                idx += 1
+                # Prevent idx out of range err
+                if lit_idx == len(list(lit_tab.keys())):
+                    break
+            continue
         # FOR HTE FIRST EXECUTABLE INSTRUCTION
         if first_exe_loc == -1:
             first_exe_loc = hex(loc_ctr[idx])
@@ -93,7 +116,19 @@ def pass_2(lines, sym_tab, loc_ctr):
             idx += 1
             OBJ_CODE.append(handle_format_six(words, OPCODE, meta, PC))
             continue
+    
+    # Default LTORG after
+    if lit_idx < len(list(lit_tab.keys())):
+        while lit_tab[list(lit_tab.keys())[lit_idx]] == loc_ctr[idx]:
 
+            OBJ_CODE.append(data_definition(["*", "BYTE", (list(lit_tab.keys())[lit_idx])[1:]]))
+
+            lit_idx += 1
+            idx += 1
+            # Prevent idx out of range err
+            if lit_idx == len(list(lit_tab.keys())):
+                break
+    
     print('Finished Pass two!')
 
     # HTE Output
@@ -238,7 +273,6 @@ def data_definition(words):
     varSize = 1  # byte
     if "WORD" in words:
         varSize = 3  # byte
-
     # Must be VarName : Datatype : Value
     if (len(words) != 3):
         return 'Invalid Data Declaration'
@@ -305,6 +339,7 @@ def xbpe_hex(words, meta):
     xbpe = 0
     loc_ctr = meta['loc_ctr']
     sym_tab = meta['sym_tab']
+
     PC = meta['PC']
 
     idx = 0

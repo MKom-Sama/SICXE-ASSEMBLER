@@ -71,10 +71,11 @@ def output_symtab(symbol, LOC_CTR):
     return
 
 
-def output_outtxt(loc_ctr, lines, obj_code):
+def output_outtxt(loc_ctr, lines, obj_code, lit_tab):
     file = open("out/OUT.txt", "a")
 
     idx = 0
+    lit_idx = 0
     for line in lines:
         # REMOVE LEADING SPACES
         line = line.lstrip(" ")
@@ -84,9 +85,16 @@ def output_outtxt(loc_ctr, lines, obj_code):
 
         if "START" in words:
             continue
+        if "END" in words:
+            print_dashed_line(file)
+            file.write('| ' + ' '.ljust(6) + ' : ')
+            file.write(
+                ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(10))
+            file.write('-'.ljust(12).upper()[2:] + ' |' + '\n')
+            break
         if "BASE" in words:
             file.write('-'.ljust(48, '-') + '\n')
-            file.write('| ' + addr.ljust(6) + ' : ')
+            file.write('| ' + ' '.ljust(6) + ' : ')
             file.write(
                 ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(10))
             file.write('-'.ljust(12).upper()[2:] + ' |' + '\n')
@@ -95,6 +103,31 @@ def output_outtxt(loc_ctr, lines, obj_code):
             continue
 
         if line[0] == '.':  # FOR COMMENTS
+            continue
+
+        if "LTORG" in words:
+            print_dashed_line(file)
+            file.write('| ' + ' '.ljust(6) + ' : ')
+            file.write(
+                ' '.ljust(8) + words[0].ljust(6) + " " + ' '.ljust(20) + ' |' + '\n')
+            if lit_idx < len(list(lit_tab.keys())):
+                # Print Literals
+                while lit_tab[list(lit_tab.keys())[lit_idx]] == loc_ctr[idx]:
+                    addr = '0x' + hex(loc_ctr[idx])[2:].upper()
+                    print_dashed_line(file)
+                    file.write('| ' + addr.ljust(6) + ' : ')
+                    file.write(
+                        ' '.ljust(8) + '*'.ljust(6) + " " + list(lit_tab.keys())[lit_idx].ljust(10))
+                    file.write(obj_code[idx].ljust(
+                        12).upper()[2:] + ' |' + '\n')
+                    idx += 1
+                    lit_idx += 1     
+                    # Prevent idx out of range err
+                    if lit_idx == len(list(lit_tab.keys())):
+                        break
+                continue
+            else:
+                print_dashed_line(file)
             continue
 
         addr = '0x' + hex(loc_ctr[idx])[2:].upper()
@@ -121,6 +154,24 @@ def output_outtxt(loc_ctr, lines, obj_code):
 
         idx += 1
 
+    # Default LTORG after
+    if lit_idx < len(list(lit_tab.keys())):
+        while lit_tab[list(lit_tab.keys())[lit_idx]] == loc_ctr[idx]:
+            # Print Literals
+            addr = '0x' + hex(loc_ctr[idx])[2:].upper()
+            print_dashed_line(file)
+            file.write('| ' + addr.ljust(6) + ' : ')
+            file.write(
+                ' '.ljust(8) + '*'.ljust(6) + " " + list(lit_tab.keys())[lit_idx].ljust(10))
+            file.write(obj_code[idx].ljust(
+                12).upper()[2:] + ' |' + '\n')
+
+            lit_idx += 1
+            idx += 1
+            # Prevent idx out of range err
+            if lit_idx == len(list(lit_tab.keys())):
+                break
+
     file.write('-'.ljust(48, '-') + '\n')
     file.close()
     return
@@ -138,6 +189,10 @@ def output_objcode(OBJ_CODE):
 
     file.close()
     return
+
+
+def print_dashed_line(file):
+    file.write('-'.ljust(48, '-') + '\n')
 
 
 def output_loc_ctr(loc_ctr):

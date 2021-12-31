@@ -25,7 +25,6 @@ def pass_1(lines):
                 stop_process("Found another START , not good")
                 break
         if "END" in words:
-            print("Finished Pass one!")
             break
         if not words:  # FOR EMPTY LINES
             continue
@@ -44,7 +43,7 @@ def pass_1(lines):
 
                 loc_ctr_step = handle_literal(literal)
                 
-                LIT_TAB[literal] = {"addr": LOC_CTR[-1]}
+                LIT_TAB[literal] = LOC_CTR[-1]
                 LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
 
             lit_tab_temp = []
@@ -91,7 +90,7 @@ def pass_1(lines):
             if words[idx+1] not in lit_tab_temp:
                 lit_tab_temp.append(words[idx+1])
 
-    # default LTORG after
+    # Default LTORG after
     if lit_tab_temp:
         for literal in lit_tab_temp:
             # No Duplicate Literals
@@ -99,10 +98,11 @@ def pass_1(lines):
                 continue
             loc_ctr_step = handle_literal(literal)
             
-            LIT_TAB[literal] = {"addr": LOC_CTR[-1]}
+            LIT_TAB[literal] = LOC_CTR[-1]
             LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
        
-    print('lit_tab', LIT_TAB)
+
+    print("Finished Pass one!")
     return LOC_CTR, SYM_TAB, LIT_TAB
 
 
