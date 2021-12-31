@@ -125,7 +125,9 @@ def output_outtxt(loc_ctr, lines, obj_code):
     file.close()
     return
 
-# * TESTING FUNCTION
+# * TESTING FUNCTIONS
+
+
 def output_objcode(OBJ_CODE):
     file = open("out/OBJECT_CODE.txt", "w")
     for obj in OBJ_CODE:
@@ -137,3 +139,10 @@ def output_objcode(OBJ_CODE):
     file.close()
     return
 
+
+def output_loc_ctr(loc_ctr):
+    file = open("out/LOC_CTR.txt", "w")
+    for obj in loc_ctr:
+        file.write(hex(obj) + "\n")
+
+    file.close()

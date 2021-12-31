@@ -8,13 +8,13 @@ CLOOP     +JSUB  RDREC
           JEQ    ENDFIL
           +JSUB  WRREC
           J      CLOOP
-ENDFIL    LDA    =C'EOF'
+ENDFIL    LDA    EOF
           STA    BUFFER
           LDA    #3
           STA    LENGTH
           +JSUB  WRREC
           J      @RETADR
-          LTORG
+EOF       BYTE  C'EOF'
 RETADR    RESW   1
 LENGTH    RESW   1
 BUFFER    RESB   4096
@@ -41,11 +41,12 @@ INPUT     BYTE   X'F1'
                   
 WRREC     CLEAR  X
           LDT    LENGTH
-WLOOP     TD     =X'O5'
+WLOOP     TD     OUTPUT
           JEQ    WLOOP
           LDCH   BUFFER,X
-          WD     =X'O5'
+          WD     OUTPUT
           TIXR   T
           JLT    WLOOP
           RSUB
+OUTPUT    BYTE  X'05'
           END    FIRST

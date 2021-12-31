@@ -1,9 +1,13 @@
 from OPERATION_TABLE import OPTAB
 
 # TAKES PROG AS INPUT RETURNS LOC_CTR & SYM_TAB
+
+
 def pass_1(lines):
     LOC_CTR = []  # in DECIMAL
     SYM_TAB = {}
+    LIT_TAB = {}
+    lit_tab_temp = []
     for line in lines:
 
         # REMOVE LEADING SPACES
@@ -14,12 +18,12 @@ def pass_1(lines):
 
         # SHOULD ADD FLAGS #TODO LATER
         if "START" in words:
-            if not LOC_CTR:         
-                LOC_CTR.append(int(words[2],16));
-                continue;
+            if not LOC_CTR:
+                LOC_CTR.append(int(words[2], 16))
+                continue
             else:
                 stop_process("Found another START , not good")
-                break;
+                break
         if "END" in words:
             print("Finished Pass one!")
             break
@@ -28,6 +32,22 @@ def pass_1(lines):
         if line[0] == '.':  # FOR COMMENTS
             continue
         if words[0] == "BASE":
+            continue
+
+        # For Literals
+        if words[0] == "LTORG":
+            # Todo Later Add support for int literal
+            for literal in lit_tab_temp:
+                # No Duplicate Literals
+                if literal in LIT_TAB.keys():
+                    continue
+
+                loc_ctr_step = handle_literal(literal)
+                
+                LIT_TAB[literal] = {"addr": LOC_CTR[-1]}
+                LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
+
+            lit_tab_temp = []
             continue
 
         # FIND INSTRUCTION FORMAT
@@ -59,7 +79,31 @@ def pass_1(lines):
 
         LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
 
-    return LOC_CTR, SYM_TAB
+        # Literals
+        # print(words)
+        if len(words) == 1:
+            continue
+        idx = 0
+        if len(words) == 3:
+            idx = 1
+        if words[idx+1][0] == '=':
+            # Found Literal
+            if words[idx+1] not in lit_tab_temp:
+                lit_tab_temp.append(words[idx+1])
+
+    # default LTORG after
+    if lit_tab_temp:
+        for literal in lit_tab_temp:
+            # No Duplicate Literals
+            if literal in LIT_TAB.keys():
+                continue
+            loc_ctr_step = handle_literal(literal)
+            
+            LIT_TAB[literal] = {"addr": LOC_CTR[-1]}
+            LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
+       
+    print('lit_tab', LIT_TAB)
+    return LOC_CTR, SYM_TAB, LIT_TAB
 
 
 def find_format(words, keys):
@@ -157,7 +201,6 @@ def declare_symbol(line, LOC_CTR, SYM_TAB, is_label):
     symbol = line[0]
     type_ = line[1]
 
-
     # CHECK IF SYMBOL ALREADY DECLARED
     if symbol in SYM_TAB.keys():
         return False, -1
@@ -196,11 +239,23 @@ def declare_symbol(line, LOC_CTR, SYM_TAB, is_label):
 def output_symtab(symbol, LOC_CTR):
     file = open("out/SYMBOL_TABLE.txt", "a")
     addr = '0x' + hex(int(LOC_CTR))[2:].upper()
-    file.write('-'.ljust(23,'-')+'\n')
-    file.write('| ' +symbol.ljust(8) + " : " + addr.ljust(8) + ' | \n')
-    file.write('-'.ljust(23,'-')+'\n')
+    file.write('-'.ljust(23, '-')+'\n')
+    file.write('| ' + symbol.ljust(8) + " : " + addr.ljust(8) + ' | \n')
+    file.write('-'.ljust(23, '-')+'\n')
     file.close()
     return
+
+
+def handle_literal(literal):
+    # Todo Later Handle int values
+    loc_ctr_step = 0
+    if literal[1] == "C":
+        loc_ctr_step = len(literal[2:])-2
+    if literal[1] == "X":
+        loc_ctr_step = len(literal[2:]) // 2
+
+    return loc_ctr_step
+
 
 def stop_process(msg):
     print('\033[91m'
