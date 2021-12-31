@@ -1,15 +1,16 @@
+from typing import Literal, NoReturn
 from OPERATION_TABLE import OPTAB
 
 # TAKES PROG AS INPUT RETURNS LOC_CTR & SYM_TAB
 
 
 def pass_1(lines):
-    LOC_CTR = []  # in DECIMAL
+    LOC_CTR = [0]  # in DECIMAL
     SYM_TAB = {}
     LIT_TAB = {}
-    lit_tab_temp = []
+    ltctr = 0
     for line in lines:
-
+        
         # REMOVE LEADING SPACES
         line = line.lstrip(" ")
         line = line.rstrip(" ")
@@ -18,13 +19,14 @@ def pass_1(lines):
 
         # SHOULD ADD FLAGS #TODO LATER
         if "START" in words:
-            if not LOC_CTR:
-                LOC_CTR.append(int(words[2], 16))
-                continue
-            else:
-                stop_process("Found another START , not good")
-                break
-        if "END" in words:
+            continue
+        if "END" in words: 
+            for i in range (ltctr,len(list(LIT_TAB.values()))):
+                CTR_DUP= LOC_CTR[-1]
+                BRUH = list(LIT_TAB.keys())[i]
+                LOC_CTR[-1] = LOC_CTR[-1] + int(list(LIT_TAB.values())[i]) 
+                LIT_TAB[BRUH]=hex(CTR_DUP)
+            print("Finished Pass one!")
             break
         if not words:  # FOR EMPTY LINES
             continue
@@ -32,23 +34,17 @@ def pass_1(lines):
             continue
         if words[0] == "BASE":
             continue
-
-        # For Literals
         if words[0] == "LTORG":
-            # Todo Later Add support for int literal
-            for literal in lit_tab_temp:
-                # No Duplicate Literals
-                if literal in LIT_TAB.keys():
-                    continue
-
-                loc_ctr_step = handle_literal(literal)
-                
-                LIT_TAB[literal] = LOC_CTR[-1]
-                LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
-
-            lit_tab_temp = []
+            for i in range (ltctr,len(list(LIT_TAB.values()))):
+                CTR_DUP= LOC_CTR[-1]
+                BRUH = list(LIT_TAB.keys())[i]
+                LOC_CTR[-1] = LOC_CTR[-1] + int(list(LIT_TAB.values())[i]) 
+                LIT_TAB[BRUH]= hex(CTR_DUP)
+                ltctr=ltctr+1
+            
             continue
-
+        
+    
         # FIND INSTRUCTION FORMAT
         instruct, f_size, is_label = find_format(words, list(OPTAB.keys()))
 
@@ -75,35 +71,16 @@ def pass_1(lines):
             # INVALID SYMBOL DECLARATION
             stop_process(words[0] + " already declared! \n" + "at : "+line)
             return
-
-        LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
-
-        # Literals
-        # print(words)
-        if len(words) == 1:
-            continue
-        idx = 0
-        if len(words) == 3:
-            idx = 1
-        if words[idx+1][0] == '=':
-            # Found Literal
-            if words[idx+1] not in lit_tab_temp:
-                lit_tab_temp.append(words[idx+1])
-
-    # Default LTORG after
-    if lit_tab_temp:
-        for literal in lit_tab_temp:
-            # No Duplicate Literals
-            if literal in LIT_TAB.keys():
-                continue
-            loc_ctr_step = handle_literal(literal)
-            
-            LIT_TAB[literal] = LOC_CTR[-1]
-            LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
+        lit_find(words,LIT_TAB)
+        
+        # PRINT TO OUT.txt
+        output_outtxt(line, LOC_CTR[-1])
        
 
-    print("Finished Pass one!")
-    return LOC_CTR, SYM_TAB, LIT_TAB
+        LOC_CTR.append(LOC_CTR[-1] + loc_ctr_step)
+    print(LIT_TAB.items())
+    output_littab(LIT_TAB)
+    return LOC_CTR, SYM_TAB,LIT_TAB
 
 
 def find_format(words, keys):
@@ -195,11 +172,12 @@ def is_symbol_declare(word):
 
 
 def declare_symbol(line, LOC_CTR, SYM_TAB, is_label):
-    # returns SUCESS , LOC_CTR_STEP(int)
+    # returns SUCESSs , LOC_CTR_STEP(int)
 
     # Writes to SYMBOL_TABLE FILE
     symbol = line[0]
     type_ = line[1]
+
 
     # CHECK IF SYMBOL ALREADY DECLARED
     if symbol in SYM_TAB.keys():
@@ -235,26 +213,67 @@ def declare_symbol(line, LOC_CTR, SYM_TAB, is_label):
     loc_ctr_step = is_instruction(type_)
     return success, loc_ctr_step
 
+def lit_find(words,LIT_TAB): 
+    Literal_1=""
+    Literal_=""
+    if len(words) == 3:
+        Literal_1 = words[2]
+        
+    elif len(words) == 2:
+        Literal_1= words[1]
+        
+    if  '=' in Literal_1:
+        Literal_=Literal_1
+        LIT_TAB[Literal_]=-1
+    loc_ctr_step = -1
+    if "=C" in Literal_:
+        loc_ctr_step = len(Literal_1)-4
+        LIT_TAB[Literal_1]=loc_ctr_step
+        return Literal_
+    if "=X" in Literal_:
+        loc_ctr_step= int((len(Literal_1)-4)/2)
+        LIT_TAB[Literal_1]= loc_ctr_step
+        return Literal_
+   
+    return Literal_
+
+
+
+
+def output_littab(lttab):  
+    file = open("out/LIT_TABLE.txt", "a")
+    file.write("LITERALS"+"\t"+"ADDRESSES"+"\n")
+    for i in range (0,len(list(lttab.values()))):
+        file.write(str(list(lttab.keys())[i]).ljust(6) + "" +str(list(lttab.values())[i]).rjust(12) +"\n" )
+    file.close()
+    return
+    
 
 def output_symtab(symbol, LOC_CTR):
     file = open("out/SYMBOL_TABLE.txt", "a")
     addr = '0x' + hex(int(LOC_CTR))[2:].upper()
-    file.write('-'.ljust(23, '-')+'\n')
-    file.write('| ' + symbol.ljust(8) + " : " + addr.ljust(8) + ' | \n')
-    file.write('-'.ljust(23, '-')+'\n')
+    file.write(addr.ljust(6) + " " + symbol + "\n")
     file.close()
     return
 
 
-def handle_literal(literal):
-    # Todo Later Handle int values
-    loc_ctr_step = 0
-    if literal[1] == "C":
-        loc_ctr_step = len(literal[2:])-2
-    if literal[1] == "X":
-        loc_ctr_step = len(literal[2:]) // 2
 
-    return loc_ctr_step
+def output_outtxt(line, current_loc_ctr):
+    file = open("out/OUT.txt", "a")
+    words = line.split()
+    addr = '0x' + hex(int(current_loc_ctr))[2:].upper()
+    if len(words) == 3:
+        file.write(addr.ljust(
+            6) + " : " + words[0].ljust(8) + words[1].ljust(6) + " " + words[2].ljust(6) + "\n")
+    elif len(words) == 2:
+        file.write(addr.ljust(6) + " : " +
+                   ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(6) + "\n")
+    else:
+        file.write(addr.ljust(6) + " : " +
+                   ' '.ljust(8) + words[0].ljust(6) + "\n")
+
+    file.close()
+    return
 
 
 def stop_process(msg):
