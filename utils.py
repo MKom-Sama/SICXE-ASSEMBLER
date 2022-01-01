@@ -99,6 +99,13 @@ def output_outtxt(loc_ctr, lines, obj_code, lit_tab):
                 ' '.ljust(8) + words[0].ljust(6) + " " + words[1].ljust(10))
             file.write('-'.ljust(12).upper()[2:] + ' |' + '\n')
             continue
+        if "EQU" in words:
+            print_dashed_line(file)
+            file.write('| ' + ' '.ljust(6) + ' : ')
+            file.write(
+                words[0].ljust(8) + words[1].ljust(6) + " " + words[2].ljust(20))
+            file.write(' |' + '\n')
+            continue
         if not words:
             continue
 
@@ -121,7 +128,7 @@ def output_outtxt(loc_ctr, lines, obj_code, lit_tab):
                     file.write(obj_code[idx].ljust(
                         12).upper()[2:] + ' |' + '\n')
                     idx += 1
-                    lit_idx += 1     
+                    lit_idx += 1
                     # Prevent idx out of range err
                     if lit_idx == len(list(lit_tab.keys())):
                         break

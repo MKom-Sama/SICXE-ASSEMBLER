@@ -62,6 +62,9 @@ def pass_2(lines, sym_tab, loc_ctr, lit_tab):
             idx = idx+1
             OBJ_CODE.append(data_definition(words))
             continue
+        
+        if "EQU" in words:
+            continue
 
         if "LTORG" in words:
 

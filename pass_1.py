@@ -32,6 +32,11 @@ def pass_1(lines):
             continue
         if words[0] == "BASE":
             continue
+        
+        if "EQU" in words:
+            SYM_TAB[words[0]] = handle_EQU(words,SYM_TAB,LOC_CTR[-1]);
+            output_symtab(words[0],SYM_TAB[words[0]])
+            continue
 
         # For Literals
         if words[0] == "LTORG":
@@ -256,6 +261,21 @@ def handle_literal(literal):
 
     return loc_ctr_step
 
+def handle_EQU(words,sym_tab,curr_loc_ctr):
+    expression = words[2]
+
+    # Replacing symbols with values
+    expression = expression.replace('*',str(curr_loc_ctr))
+    for symbol in sym_tab.keys():
+        expression = expression.replace(symbol,str(sym_tab[symbol]))
+
+    expression_value = 0
+    try:
+        expression_value = eval(expression)
+    except:
+        stop_process('Invalid EQU Expression')
+    return expression_value
+        
 
 def stop_process(msg):
     print('\033[91m'

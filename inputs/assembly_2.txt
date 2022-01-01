@@ -18,8 +18,6 @@ ENDFIL    LDA    =C'EOF'
 RETADR    RESW   1
 LENGTH    RESW   1
 BUFFER    RESB   4096
-BUFFEND   EQU    *
-MAXLEN    EQU   BUFFEND-BUFFER
                  
     .SUBROUTINE TO READ A RECORD.
                   
